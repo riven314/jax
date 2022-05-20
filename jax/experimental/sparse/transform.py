@@ -186,6 +186,7 @@ class SparsifyValue(NamedTuple):
 
 
 _is_bcoo = lambda arg: isinstance(arg, BCOO)
+_is_bcoo_with_sorted_indices = lambda arg: isinstance(arg, BCOO) and arg.indices_sorted
 _is_spvalue = lambda arg: isinstance(arg, SparsifyValue)
 
 
@@ -327,7 +328,7 @@ def _sparsify_with_tracer(fun):
   """Implementation of sparsify() using tracers."""
   @functools.wraps(fun)
   def _wrapped(*args):
-    args_flat, in_tree = tree_flatten(args, is_leaf=_is_bcoo)
+    args_flat, in_tree = tree_flatten(args, is_leaf=_is_bcoo_with_sorted_indices)
     wrapped_fun, out_tree = flatten_fun_nokwargs(lu.wrap_init(fun), in_tree)
     out = sparsify_fun(wrapped_fun, args_flat)
     return tree_unflatten(out_tree(), out)
